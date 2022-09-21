@@ -307,9 +307,13 @@ extern struct stats_ lwip_stats;
 void stats_init(void);
 
 /** Debug with TSC */
-extern u64_t tsc_ip[];
-void tsc_ip_write(u64_t value);
-void tsc_ip_show();
+#define TSC_ETHERNET 0
+#define TSC_IP 1
+#define TSC_UDP 2
+#define TSC_PROTO_MAX 3
+#define TSC_ENTRY_MAX 30
+void tsc_write(int type, u64_t value);
+void tsc_show(int type);
 
 #define STATS_INC(x) ++lwip_stats.x
 #define STATS_DEC(x) --lwip_stats.x

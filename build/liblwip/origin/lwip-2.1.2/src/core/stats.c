@@ -50,25 +50,30 @@
 
 struct stats_ lwip_stats;
 
-#define TSC_IP_MAX 100
-static int tsc_ip_index;
-static int tsc_ip_block_index;
-u64_t tsc_ip[TSC_IP_MAX];
+/** timestamp counter */
+u64_t tsc_list[TSC_PROTO_MAX][TSC_ENTRY_MAX];
+static int tsc_index[TSC_PROTO_MAX];
+static int tsc_block_index[TSC_PROTO_MAX];
 
-void tsc_ip_write(u64_t value)
+void tsc_write(int proto, u64_t value)
 {
-	  if (tsc_ip_index == TSC_IP_MAX){
-			tsc_ip_show();
-			tsc_ip_index = 0;
-		}
-		tsc_ip[tsc_ip_index++] = value;
+	if (proto >= TSC_PROTO_MAX){
+		fprintf(stderr, "tsc type unknown\n");
+		return;
+	}
+	if (tsc_index[proto] >= TSC_ENTRY_MAX){
+		tsc_show(proto);
+		tsc_index[proto] = 0;
+		tsc_block_index[proto]++;
+	}
+	tsc_list[proto][tsc_index[proto]++] = value;
 }
 
-void tsc_ip_show()
+void tsc_show(int proto)
 {
-	printf("tsc ip (block %d):\n", tsc_ip_block_index++);
-	for (int i = 0; i < tsc_ip_index; i++){
-		printf("\t0x%lx\n", tsc_ip[i]);
+	printf("tsc proto[%d] block[%d]:\n", proto, tsc_block_index[proto]);
+	for (int i = 0; i < tsc_index[proto]; i++){
+		printf("\t0x%lx\n", tsc_list[proto][i]);
 	}
 }
 

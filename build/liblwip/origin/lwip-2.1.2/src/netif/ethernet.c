@@ -63,6 +63,15 @@
 const struct eth_addr ethbroadcast = {{0xff, 0xff, 0xff, 0xff, 0xff, 0xff}};
 const struct eth_addr ethzero = {{0, 0, 0, 0, 0, 0}};
 
+static inline uint64_t rdtsc(void)
+{
+	  unsigned int lo,hi;
+		__asm__ __volatile__ ("mfence");
+		__asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
+		__asm__ __volatile__ ("mfence");
+		return ((uint64_t)hi << 32) | lo;
+}
+
 /**
  * @ingroup lwip_nosys
  * Process received ethernet frames. Using this function instead of directly
@@ -80,6 +89,7 @@ const struct eth_addr ethzero = {{0, 0, 0, 0, 0, 0}};
 err_t
 ethernet_input(struct pbuf *p, struct netif *netif)
 {
+	u64_t start, end;
   struct eth_hdr *ethhdr;
   u16_t type;
 #if LWIP_ARP || ETHARP_SUPPORT_VLAN || LWIP_IPV6
@@ -87,6 +97,8 @@ ethernet_input(struct pbuf *p, struct netif *netif)
 #endif /* LWIP_ARP || ETHARP_SUPPORT_VLAN */
 
   LWIP_ASSERT_CORE_LOCKED();
+
+	start = rdtsc();
 
   if (p->len <= SIZEOF_ETH_HDR) {
     /* a packet with only an ethernet header (or less) is not valid for us */
@@ -166,6 +178,9 @@ ethernet_input(struct pbuf *p, struct netif *netif)
       p->flags |= PBUF_FLAG_LLBCAST;
     }
   }
+
+	end = rdtsc();
+	tsc_write(TSC_ETHERNET, end - start);
 
   switch (type) {
 #if LWIP_IPV4 && LWIP_ARP

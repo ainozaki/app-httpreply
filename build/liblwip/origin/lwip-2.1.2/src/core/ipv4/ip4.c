@@ -777,7 +777,7 @@ err_t ip4_input(struct pbuf *p, struct netif *inp)
     pbuf_remove_header(p, iphdr_hlen); /* Move to payload, no check necessary. */
 
 		end = rdtsc();
-		tsc_ip_write(end - start);
+		tsc_write(TSC_IP, end - start);
 
     switch (IPH_PROTO(iphdr))
     {

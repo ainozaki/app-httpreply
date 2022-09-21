@@ -63,6 +63,7 @@
 #include "lwip/snmp.h"
 #include "lwip/dhcp.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #ifndef UDP_LOCAL_PORT_RANGE_START
@@ -79,6 +80,15 @@ static u16_t udp_port = UDP_LOCAL_PORT_RANGE_START;
 /* The list of UDP PCBs */
 /* exported in udp.h (was static) */
 struct udp_pcb *udp_pcbs;
+
+static inline uint64_t rdtsc(void)
+{
+	  unsigned int lo,hi;
+		__asm__ __volatile__ ("mfence");
+		__asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
+		__asm__ __volatile__ ("mfence");
+		return ((uint64_t)hi << 32) | lo;
+}
 
 /**
  * Initialize this module.
@@ -196,6 +206,7 @@ udp_input(struct pbuf *p, struct netif *inp)
   struct udp_hdr *udphdr;
   struct udp_pcb *pcb, *prev;
   struct udp_pcb *uncon_pcb;
+  u64_t start, end;
   u16_t src, dest;
   u8_t broadcast;
   u8_t for_us = 0;
@@ -207,6 +218,7 @@ udp_input(struct pbuf *p, struct netif *inp)
   LWIP_ASSERT("udp_input: invalid pbuf", p != NULL);
   LWIP_ASSERT("udp_input: invalid netif", inp != NULL);
 
+	start = rdtsc();
   PERF_START;
 
   UDP_STATS_INC(udp.recv);
@@ -428,6 +440,8 @@ udp_input(struct pbuf *p, struct netif *inp)
     pbuf_free(p);
   }
 end:
+	end = rdtsc();
+	tsc_write(TSC_UDP, end - start);
   PERF_STOP("udp_input");
   return;
 #if CHECKSUM_CHECK_UDP
