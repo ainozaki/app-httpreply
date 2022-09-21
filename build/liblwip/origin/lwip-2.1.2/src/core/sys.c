@@ -146,6 +146,4 @@ void sys_msleep(u32_t ms)
 }
 #endif /* sys_msleep */
 
-aaaaaaaa
-
 #endif /* !NO_SYS */

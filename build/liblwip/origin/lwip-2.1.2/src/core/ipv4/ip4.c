@@ -469,9 +469,10 @@ ip4_input_accept(struct netif *netif)
  */
 err_t ip4_input(struct pbuf *p, struct netif *inp)
 {
-  u64_t start = rdtsc();
-  printf("ip4_input: 0x%lx\n", start);
-  const struct ip_hdr *iphdr;
+  u64_t start, end;
+	start = rdtsc();
+  
+	const struct ip_hdr *iphdr;
   struct netif *netif;
   u16_t iphdr_hlen;
   u16_t iphdr_len;
@@ -774,6 +775,9 @@ err_t ip4_input(struct pbuf *p, struct netif *inp)
 #endif /* LWIP_RAW */
   {
     pbuf_remove_header(p, iphdr_hlen); /* Move to payload, no check necessary. */
+
+		end = rdtsc();
+		tsc_ip_write(end - start);
 
     switch (IPH_PROTO(iphdr))
     {

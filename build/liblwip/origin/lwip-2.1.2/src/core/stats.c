@@ -45,9 +45,32 @@
 #include "lwip/mem.h"
 #include "lwip/debug.h"
 
+#include <stdio.h>
 #include <string.h>
 
 struct stats_ lwip_stats;
+
+#define TSC_IP_MAX 100
+static int tsc_ip_index;
+static int tsc_ip_block_index;
+u64_t tsc_ip[TSC_IP_MAX];
+
+void tsc_ip_write(u64_t value)
+{
+	  if (tsc_ip_index == TSC_IP_MAX){
+			tsc_ip_show();
+			tsc_ip_index = 0;
+		}
+		tsc_ip[tsc_ip_index++] = value;
+}
+
+void tsc_ip_show()
+{
+	printf("tsc ip (block %d):\n", tsc_ip_block_index++);
+	for (int i = 0; i < tsc_ip_index; i++){
+		printf("\t0x%lx\n", tsc_ip[i]);
+	}
+}
 
 void
 stats_init(void)
