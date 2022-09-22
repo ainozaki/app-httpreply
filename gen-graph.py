@@ -45,8 +45,8 @@ def main():
     y4_cdf = np.cumsum(y4) / np.sum(y4)
 
         ## labels
-    c1, c2, c3, c4, c5 = "blue", "green", "red", "yellow", "black"
-    l1, l2, l3, l4, l5 = "input_ether[ns]", "input_ip[ns]", "input_udp[ns]", "input_tcp[ns]", "CDF"
+    c1, c2, c3, c4, c5 = "blue", "green", "red", "cyan", "black"
+    l1, l2, l3, l4, l5 = "input_ether", "input_ip", "input_udp", "input_tcp", "CDF"
 
         ## plot
     ax1.hist(y1, bins=100, label=l1, color=c1)
@@ -58,6 +58,25 @@ def main():
     ax4.hist(y4, bins=100, label=l4, color=c4)
     ax4_cdf.plot(y4, y4_cdf, label=l5, color=c5, marker="o", markersize=1)
 
+        ## axes
+    ax1.set_xlim(0, 6000)
+    ax2.set_xlim(0, 6000)
+    ax3.set_xlim(0, 6000)
+    ax4.set_xlim(0, 6000)
+
+    ax1.set_xlabel("time [ns]")
+    ax1.set_ylabel("count")
+    ax1_cdf.set_ylabel("CDF")
+    ax2.set_xlabel("time [ns]")
+    ax2.set_ylabel("count")
+    ax2_cdf.set_ylabel("CDF")
+    ax3.set_xlabel("time [ns]")
+    ax3.set_ylabel("count")
+    ax3_cdf.set_ylabel("CDF")
+    ax4.set_xlabel("time [ns]")
+    ax4.set_ylabel("count")
+    ax4_cdf.set_ylabel("CDF")
+	
         ## legends
     h1, l1 = ax1.get_legend_handles_labels()
     h1_cdf, l1_cdf = ax1_cdf.get_legend_handles_labels()
