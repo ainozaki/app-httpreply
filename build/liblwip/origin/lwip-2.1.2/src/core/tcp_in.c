@@ -105,6 +105,15 @@ static void tcp_remove_sacks_gt(struct tcp_pcb *pcb, u32_t seq);
 #endif /* TCP_OOSEQ_BYTES_LIMIT || TCP_OOSEQ_PBUFS_LIMIT */
 #endif /* LWIP_TCP_SACK_OUT */
 
+static inline uint64_t rdtsc(void)
+{
+	  unsigned int lo,hi;
+		__asm__ __volatile__ ("mfence");
+		__asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
+		__asm__ __volatile__ ("mfence");
+		return ((uint64_t)hi << 32) | lo;
+}
+
 /**
  * The initial input processing of TCP. It verifies the TCP header, demultiplexes
  * the segment between the PCBs and passes it on to tcp_process(), which implements
@@ -123,6 +132,7 @@ tcp_input(struct pbuf *p, struct netif *inp)
   struct tcp_pcb *lpcb_prev = NULL;
   struct tcp_pcb_listen *lpcb_any = NULL;
 #endif /* SO_REUSE */
+  u64_t start, end;
   u8_t hdrlen_bytes;
   err_t err;
 
@@ -130,6 +140,7 @@ tcp_input(struct pbuf *p, struct netif *inp)
   LWIP_ASSERT_CORE_LOCKED();
   LWIP_ASSERT("tcp_input: invalid pbuf", p != NULL);
 
+	start = rdtsc();
   PERF_START;
 
   TCP_STATS_INC(tcp.recv);
@@ -582,6 +593,8 @@ aborted:
     pbuf_free(p);
   }
 
+	end = rdtsc();
+	tsc_write(TSC_TCP, end - start);
   LWIP_ASSERT("tcp_input: tcp_pcbs_sane()", tcp_pcbs_sane());
   PERF_STOP("tcp_input");
   return;

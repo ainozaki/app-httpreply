@@ -310,8 +310,9 @@ void stats_init(void);
 #define TSC_ETHERNET 0
 #define TSC_IP 1
 #define TSC_UDP 2
-#define TSC_PROTO_MAX 3
-#define TSC_ENTRY_MAX 30
+#define TSC_TCP 3
+#define TSC_PROTO_MAX 4
+#define TSC_ENTRY_MAX 1000
 void tsc_write(int type, u64_t value);
 void tsc_show(int type);
 
