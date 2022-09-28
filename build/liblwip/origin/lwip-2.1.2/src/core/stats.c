@@ -55,6 +55,15 @@ u64_t tsc_list[TSC_PROTO_MAX][TSC_ENTRY_MAX];
 static int tsc_index[TSC_PROTO_MAX];
 static int tsc_block_index[TSC_PROTO_MAX];
 
+static void tsc_show(int proto)
+{
+  printf("%d, %d\n", proto, tsc_block_index[proto]);
+  for (int i = 0; i < tsc_index[proto]; i++)
+  {
+    printf("\t0x%lx\n", tsc_list[proto][i]);
+  }
+}
+
 void tsc_write(int proto, u64_t value)
 {
   if (proto >= TSC_PROTO_MAX)
@@ -71,13 +80,28 @@ void tsc_write(int proto, u64_t value)
   tsc_list[proto][tsc_index[proto]++] = value;
 }
 
-void tsc_show(int proto)
+u64_t tsc_param_list[2][TSC_ENTRY_MAX];
+static int tsc_param_index;
+static int tsc_param_block_index;
+static void tsc_param_show()
 {
-  printf("%d, %d\n", proto, tsc_block_index[proto]);
-  for (int i = 0; i < tsc_index[proto]; i++)
+  printf("%d\n", tsc_param_block_index);
+  for (int i = 0; i < tsc_param_index; i++)
   {
-    printf("\t0x%lx\n", tsc_list[proto][i]);
+    printf("\t0x%lx, 0x%lx\n", tsc_param_list[0][i], tsc_param_list[1][i]);
   }
+}
+
+void tsc_param_write(u64_t value, u64_t param)
+{
+  if (tsc_param_index >= TSC_ENTRY_MAX)
+  {
+    tsc_param_show();
+    tsc_param_index = 0;
+    tsc_param_block_index++;
+  }
+  tsc_param_list[0][tsc_param_index] = value;
+  tsc_param_list[1][tsc_param_index++] = param;
 }
 
 void stats_init(void)

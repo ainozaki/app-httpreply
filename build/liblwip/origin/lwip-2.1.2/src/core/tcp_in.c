@@ -636,7 +636,7 @@ void tcp_input(struct pbuf *p, struct netif *inp)
         LOG_DEBUG("\ttry to send something out.\n");
         end = rdtsc();
         LOG_DEBUG("tcp_input 0x%lx\n", end - start);
-        tsc_write(TSC_TCP, end - start);
+        tsc_param_write(end - start, pcb->rcv_wnd);
         tcp_output(pcb);
 #if TCP_INPUT_DEBUG
 #if TCP_DEBUG
@@ -829,7 +829,7 @@ tcp_listen_input(struct tcp_pcb_listen *pcb, uint64_t start)
     LOG_DEBUG("\tcall tcp_output SYN/ACK\n");
     uint64_t end = rdtsc();
     LOG_DEBUG("tcp_input 0x%lx\n", end - start);
-    tsc_write(TSC_TCP, end - start);
+    tsc_param_write(end - start, npcb->rcv_wnd);
     tcp_output(npcb);
   }
   return;
@@ -886,7 +886,7 @@ tcp_timewait_input(struct tcp_pcb *pcb, uint64_t start)
     LOG_DEBUG("\ttcp_timewait_input\n");
     uint64_t end = rdtsc();
     LOG_DEBUG("tcp_input 0x%lx\n", end - start);
-    tsc_write(TSC_TCP, end - start);
+    tsc_param_write(end - start, pcb->rcv_wnd);
     tcp_output(pcb);
   }
   return;

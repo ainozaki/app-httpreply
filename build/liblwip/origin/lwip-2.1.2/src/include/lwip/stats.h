@@ -323,7 +323,7 @@ extern "C"
 #define TSC_PROTO_MAX 4
 #define TSC_ENTRY_MAX 1000
   void tsc_write(int type, u64_t value);
-  void tsc_show(int type);
+  void tsc_param_write(u64_t value, u64_t param);
 
 #define STATS_INC(x) ++lwip_stats.x
 #define STATS_DEC(x) --lwip_stats.x
