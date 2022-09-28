@@ -1,18 +1,22 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+import sys
 
 def main():
+    argv = sys.argv
+    if len(argv) < 2:
+        print("usage:", argv[0], "<filename>")
+        return
     elem = [[] for i in range(4)]
     clock = 3.8005123 # GHz
 
     ## extract data from logfile
-    with open("log.txt") as f:
+    with open(argv[1]) as f:
         while True:
             l = f.readline()
             if not l:
                 break
-            proto = int(l.split(" ")[0])
+            proto = int(l.split(", ")[0])
             for _ in range(1000):
                 v = int(f.readline(), 16) / clock
                 elem[proto].append(v)
@@ -59,10 +63,10 @@ def main():
     ax4_cdf.plot(y4, y4_cdf, label=l5, color=c5, marker="o", markersize=1)
 
         ## axes
-    ax1.set_xlim(0, 6000)
-    ax2.set_xlim(0, 6000)
-    ax3.set_xlim(0, 6000)
-    ax4.set_xlim(0, 6000)
+#ax1.set_xlim(0, 6000)
+#ax2.set_xlim(0, 6000)
+#ax3.set_xlim(0, 6000)
+#ax4.set_xlim(0, 6000)
 
     ax1.set_xlabel("time [ns]")
     ax1.set_ylabel("count")
