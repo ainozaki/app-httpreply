@@ -470,9 +470,9 @@ ip4_input_accept(struct netif *netif)
 err_t ip4_input(struct pbuf *p, struct netif *inp)
 {
   u64_t start, end;
-	start = rdtsc();
-  
-	const struct ip_hdr *iphdr;
+  start = rdtsc();
+
+  const struct ip_hdr *iphdr;
   struct netif *netif;
   u16_t iphdr_hlen;
   u16_t iphdr_len;
@@ -776,8 +776,8 @@ err_t ip4_input(struct pbuf *p, struct netif *inp)
   {
     pbuf_remove_header(p, iphdr_hlen); /* Move to payload, no check necessary. */
 
-		end = rdtsc();
-		tsc_write(TSC_IP, end - start);
+    end = rdtsc();
+    tsc_write(TSC_IP, end - start);
 
     switch (IPH_PROTO(iphdr))
     {
@@ -877,6 +877,7 @@ err_t ip4_output_if(struct pbuf *p, const ip4_addr_t *src, const ip4_addr_t *des
                     u8_t ttl, u8_t tos,
                     u8_t proto, struct netif *netif)
 {
+  LOG_DEBUG("\tip4_output_if\n");
 #if IP_OPTIONS_SEND
   return ip4_output_if_opt(p, src, dest, ttl, tos, proto, netif, NULL, 0);
 }
@@ -1134,6 +1135,7 @@ err_t ip4_output_if_opt_src(struct pbuf *p, const ip4_addr_t *src, const ip4_add
 err_t ip4_output(struct pbuf *p, const ip4_addr_t *src, const ip4_addr_t *dest,
                  u8_t ttl, u8_t tos, u8_t proto)
 {
+  LOG_DEBUG("\tip4_output\n");
   struct netif *netif;
 
   LWIP_IP_CHECK_PBUF_REF_COUNT_FOR_TX(p);
