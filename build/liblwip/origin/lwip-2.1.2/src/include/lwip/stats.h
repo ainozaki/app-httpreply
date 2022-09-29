@@ -327,6 +327,7 @@ extern "C"
 #define TSC_ENTRY_MAX 100
   void tsc_write(int type, u64_t value);
   void tsc_param_write(u64_t value, u64_t hdr_wnd, u64_t recv_wnd, u64_t send_wnd);
+  void tsc_tcp_write(u64_t type, u64_t value);
 
 #define STATS_INC(x) ++lwip_stats.x
 #define STATS_DEC(x) --lwip_stats.x

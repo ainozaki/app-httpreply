@@ -73,13 +73,14 @@ void tsc_write(int proto, u64_t value)
   }
   if (tsc_index[proto] >= TSC_ENTRY_MAX)
   {
-    tsc_show(proto);
+    // tsc_show(proto);
     tsc_index[proto] = 0;
     tsc_block_index[proto]++;
   }
   tsc_list[proto][tsc_index[proto]++] = value;
 }
 
+// tcp with winsize
 u64_t tsc_param_list[4][TSC_ENTRY_MAX];
 static int tsc_param_index;
 static int tsc_param_block_index;
@@ -99,7 +100,7 @@ void tsc_param_write(u64_t value, u64_t hdr, u64_t recv, u64_t snd)
 {
   if (tsc_param_index >= TSC_ENTRY_MAX)
   {
-    tsc_param_show();
+    // tsc_param_show();
     tsc_param_index = 0;
     tsc_param_block_index++;
   }
@@ -107,6 +108,34 @@ void tsc_param_write(u64_t value, u64_t hdr, u64_t recv, u64_t snd)
   tsc_param_list[1][tsc_param_index] = hdr;
   tsc_param_list[2][tsc_param_index] = recv;
   tsc_param_list[3][tsc_param_index++] = snd;
+}
+
+// tcp
+u64_t tsc_tcp_list[4][TSC_ENTRY_MAX];
+static int tsc_tcp_index;
+static int tsc_tcp_block_index;
+
+static void tsc_tcp_show()
+{
+  printf("%d\n", tsc_tcp_block_index);
+  for (int i = 0; i < tsc_tcp_index; i++)
+  {
+    printf("0x%lx ", tsc_tcp_list[0][i]);
+    printf("0x%lx ", tsc_tcp_list[1][i]);
+    printf("0x%lx ", tsc_tcp_list[2][i]);
+    printf("0x%lx\n", tsc_tcp_list[3][i]);
+  }
+}
+
+void tsc_tcp_write(u64_t type, u64_t value)
+{
+  if (tsc_tcp_index >= TSC_ENTRY_MAX)
+  {
+    tsc_tcp_show();
+    tsc_tcp_index = 0;
+    tsc_tcp_block_index++;
+  }
+  tsc_tcp_list[type][tsc_tcp_index++] = value;
 }
 
 void stats_init(void)
