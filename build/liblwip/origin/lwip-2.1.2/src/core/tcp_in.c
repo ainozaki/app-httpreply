@@ -639,7 +639,7 @@ void tcp_input(struct pbuf *p, struct netif *inp)
         end = rdtsc();
         LOG_DEBUG("tcp_input 0x%lx\n", end - start);
         tsc_param_write(end - start, tcphdr->wnd, pcb->rcv_wnd, pcb->snd_wnd);
-        tsc_write(TSC_TCP, end - start);
+        tsc_write(TSC_TCP_0, end - start);
         tcp_output(pcb);
 #if TCP_INPUT_DEBUG
 #if TCP_DEBUG
@@ -749,7 +749,7 @@ tcp_listen_input(struct tcp_pcb_listen *pcb, uint64_t start)
     LWIP_DEBUGF(TCP_RST_DEBUG, ("tcp_listen_input: ACK in LISTEN, sending reset\n"));
     uint64_t end = rdtsc();
     LOG_DEBUG("tcp_input 0x%lx\n", end - start);
-    // tsc_write(TSC_TCP, end - start);
+    tsc_write(TSC_TCP_2, end - start);
     tcp_rst((const struct tcp_pcb *)pcb, ackno, seqno + tcplen, ip_current_dest_addr(),
             ip_current_src_addr(), tcphdr->dest, tcphdr->src);
   }
@@ -830,7 +830,7 @@ tcp_listen_input(struct tcp_pcb_listen *pcb, uint64_t start)
     LOG_DEBUG("\tcall tcp_output SYN/ACK\n");
     uint64_t end = rdtsc();
     LOG_DEBUG("tcp_input 0x%lx\n", end - start);
-    // tsc_write(TSC_TCP, end - start);
+    tsc_write(TSC_TCP_1, end - start);
 
     /* Send a SYN|ACK together with the MSS option. */
     rc = tcp_enqueue_flags(npcb, TCP_SYN | TCP_ACK);

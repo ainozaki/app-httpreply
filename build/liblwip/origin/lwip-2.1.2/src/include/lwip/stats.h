@@ -319,9 +319,12 @@ extern "C"
 #define TSC_ETHERNET 0
 #define TSC_IP 1
 #define TSC_UDP 2
-#define TSC_TCP 3
-#define TSC_PROTO_MAX 4
-#define TSC_ENTRY_MAX 1000
+//#define TSC_TCP 3
+#define TSC_TCP_0 3
+#define TSC_TCP_1 4
+#define TSC_TCP_2 5
+#define TSC_PROTO_MAX 6
+#define TSC_ENTRY_MAX 100
   void tsc_write(int type, u64_t value);
   void tsc_param_write(u64_t value, u64_t hdr_wnd, u64_t recv_wnd, u64_t send_wnd);
 
