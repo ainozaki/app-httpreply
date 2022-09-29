@@ -770,10 +770,12 @@ tcp_listen_input(struct tcp_pcb_listen *pcb, uint64_t start)
     }
 #endif /* TCP_LISTEN_BACKLOG */
     lend = rdtsc();
-    tsc_tcp_write(1, lend - start);
+    tsc_tcp_write(1, lend - lstart);
+    lstart = rdtsc();
     npcb = tcp_alloc(pcb->prio);
     lend = rdtsc();
-    tsc_tcp_write(2, lend - start);
+    tsc_tcp_write(2, lend - lstart);
+    lstart = rdtsc();
     /* If a new PCB could not be created (probably due to lack of memory),
        we don't do anything, but rely on the sender will retransmit the
        SYN at a time when we have more memory available. */
@@ -838,8 +840,9 @@ tcp_listen_input(struct tcp_pcb_listen *pcb, uint64_t start)
     LOG_DEBUG("\tPattern 1\n");
     LOG_DEBUG("\tcall tcp_output SYN/ACK\n");
     uint64_t end = rdtsc();
+    lend = rdtsc();
     LOG_DEBUG("tcp_input 0x%lx\n", end - start);
-    tsc_tcp_write(3, end - start);
+    tsc_tcp_write(3, lend - lstart);
     tsc_write(TSC_TCP_1, end - start);
 
     /* Send a SYN|ACK together with the MSS option. */
