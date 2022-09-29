@@ -15013,7 +15013,6 @@
 0x964
 0x600
 0x644
-[   13.680494] CRIT: [libkvmplat] <irq.c @  109> Unhandled irq=10
 0 4
 0xd4
 0x17e
@@ -19018,5 +19017,3 @@
 0xc6de
 0x122a
 0x6a6
-Console terminated, terminating guest (PID: 271450)...
-nozaki@
