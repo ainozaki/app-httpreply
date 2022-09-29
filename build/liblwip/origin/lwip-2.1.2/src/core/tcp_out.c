@@ -1354,8 +1354,10 @@ err_t tcp_output(struct tcp_pcb *pcb)
      with. */
   if (tcp_input_pcb == pcb)
   {
+    LOG_DEBUG("\ttcp_input_pcb == pcb, return\n");
     return ERR_OK;
   }
+  LOG_DEBUG("\ttcp output continue\n");
 
   wnd = LWIP_MIN(pcb->snd_wnd, pcb->cwnd);
 

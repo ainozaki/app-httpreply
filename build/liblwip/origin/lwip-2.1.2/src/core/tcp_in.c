@@ -89,7 +89,7 @@ static struct pbuf *recv_data;
 struct tcp_pcb *tcp_input_pcb;
 
 /* Forward declarations. */
-static err_t tcp_process(struct tcp_pcb *pcb);
+static err_t tcp_process(struct tcp_pcb *pcb, uint64_t start);
 static void tcp_receive(struct tcp_pcb *pcb);
 static void tcp_parseopt(struct tcp_pcb *pcb);
 
@@ -493,7 +493,7 @@ void tcp_input(struct pbuf *p, struct netif *inp)
       }
     }
     tcp_input_pcb = pcb;
-    err = tcp_process(pcb);
+    err = tcp_process(pcb, start);
     /* A return value of ERR_ABRT means that tcp_abort() was called
        and that the pcb has been freed. If so, we don't do anything. */
     if (err != ERR_ABRT)
@@ -632,11 +632,14 @@ void tcp_input(struct pbuf *p, struct netif *inp)
         {
           goto aborted;
         }
+        // Pattern 0
         /* Try to send something out. */
+        LOG_DEBUG("\tPattern 0\n");
         LOG_DEBUG("\ttry to send something out.\n");
         end = rdtsc();
         LOG_DEBUG("tcp_input 0x%lx\n", end - start);
-        tsc_param_write(end - start, pcb->rcv_wnd);
+        tsc_param_write(end - start, tcphdr->wnd, pcb->rcv_wnd, pcb->snd_wnd);
+        tsc_write(TSC_TCP, end - start);
         tcp_output(pcb);
 #if TCP_INPUT_DEBUG
 #if TCP_DEBUG
@@ -744,6 +747,9 @@ tcp_listen_input(struct tcp_pcb_listen *pcb, uint64_t start)
     /* For incoming segments with the ACK flag set, respond with a
        RST. */
     LWIP_DEBUGF(TCP_RST_DEBUG, ("tcp_listen_input: ACK in LISTEN, sending reset\n"));
+    uint64_t end = rdtsc();
+    LOG_DEBUG("tcp_input 0x%lx\n", end - start);
+    tsc_write(TSC_TCP, end - start);
     tcp_rst((const struct tcp_pcb *)pcb, ackno, seqno + tcplen, ip_current_dest_addr(),
             ip_current_src_addr(), tcphdr->dest, tcphdr->src);
   }
@@ -819,6 +825,13 @@ tcp_listen_input(struct tcp_pcb_listen *pcb, uint64_t start)
     }
 #endif
 
+    // Pattern 1
+    LOG_DEBUG("\tPattern 1\n");
+    LOG_DEBUG("\tcall tcp_output SYN/ACK\n");
+    uint64_t end = rdtsc();
+    LOG_DEBUG("tcp_input 0x%lx\n", end - start);
+    tsc_write(TSC_TCP, end - start);
+
     /* Send a SYN|ACK together with the MSS option. */
     rc = tcp_enqueue_flags(npcb, TCP_SYN | TCP_ACK);
     if (rc != ERR_OK)
@@ -826,10 +839,6 @@ tcp_listen_input(struct tcp_pcb_listen *pcb, uint64_t start)
       tcp_abandon(npcb, 0);
       return;
     }
-    LOG_DEBUG("\tcall tcp_output SYN/ACK\n");
-    uint64_t end = rdtsc();
-    LOG_DEBUG("tcp_input 0x%lx\n", end - start);
-    tsc_param_write(end - start, npcb->rcv_wnd);
     tcp_output(npcb);
   }
   return;
@@ -881,12 +890,13 @@ tcp_timewait_input(struct tcp_pcb *pcb, uint64_t start)
 
   if ((tcplen > 0))
   {
+    // Pattern 6
     /* Acknowledge data, FIN or out-of-window SYN */
+    LOG_DEBUG("\tPattern 6\n");
     tcp_ack_now(pcb);
     LOG_DEBUG("\ttcp_timewait_input\n");
     uint64_t end = rdtsc();
     LOG_DEBUG("tcp_input 0x%lx\n", end - start);
-    tsc_param_write(end - start, pcb->rcv_wnd);
     tcp_output(pcb);
   }
   return;
@@ -904,7 +914,7 @@ tcp_timewait_input(struct tcp_pcb *pcb, uint64_t start)
  *       involved is passed as a parameter to this function
  */
 static err_t
-tcp_process(struct tcp_pcb *pcb)
+tcp_process(struct tcp_pcb *pcb, uint64_t start)
 {
   LOG_DEBUG("\ttcp_process\n");
   struct tcp_seg *rseg;
@@ -1139,7 +1149,8 @@ tcp_process(struct tcp_pcb *pcb)
     tcp_receive(pcb);
     if (recv_flags & TF_GOT_FIN)
     { /* passive close */
-      tcp_ack_now(pcb);
+      // Pattern 3
+      LOG_DEBUG("\tPattern 3\n");
       pcb->state = CLOSE_WAIT;
     }
     break;
@@ -1147,6 +1158,8 @@ tcp_process(struct tcp_pcb *pcb)
     tcp_receive(pcb);
     if (recv_flags & TF_GOT_FIN)
     {
+      // Pattern 5
+      LOG_DEBUG("\tPattern 5\n");
       if ((flags & TCP_ACK) && (ackno == pcb->snd_nxt) &&
           pcb->unsent == NULL)
       {
@@ -1167,10 +1180,14 @@ tcp_process(struct tcp_pcb *pcb)
     else if ((flags & TCP_ACK) && (ackno == pcb->snd_nxt) &&
              pcb->unsent == NULL)
     {
+      // Pattern 7
+      LOG_DEBUG("\tPattern 7\n");
       pcb->state = FIN_WAIT_2;
     }
     break;
   case FIN_WAIT_2:
+    // Pattern 4
+    LOG_DEBUG("\tPattern 4\n");
     tcp_receive(pcb);
     if (recv_flags & TF_GOT_FIN)
     {
