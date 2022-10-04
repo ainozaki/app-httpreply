@@ -154,28 +154,16 @@
 /** Enable debug message printing, but only if debug message type is enabled
  *  AND is of correct type AND is at least LWIP_DBG_LEVEL.
  */
-//#ifdef __DOXYGEN__
-//#define LWIP_DEBUG
-//#undef LWIP_DEBUG
-//#endif
-
+#ifdef __DOXYGEN__
 #define LWIP_DEBUG
+#undef LWIP_DEBUG
+#endif
 
 #ifdef LWIP_DEBUG
-#define LWIP_DEBUGF(debug, message) \
-  do                                \
-  {                                 \
-                                    \
-    LWIP_PLATFORM_DIAG(message);    \
-    if ((debug)&LWIP_DBG_HALT)      \
-    {                               \
-      while (1)                     \
-        ;                           \
-    }                               \
-  } while (0)
-
+#define LWIP_DEBUGF(debug, message)
 #else /* LWIP_DEBUG */
-///#define LWIP_DEBUGF(debug, message)
+#define LWIP_DEBUGF(debug, message)
+/*
 #define LWIP_DEBUGF(debug, message) \
   do                                \
   {                                 \
@@ -186,6 +174,7 @@
         ;                           \
     }                               \
   } while (0)
+*/
 #endif /* LWIP_DEBUG */
 
 #endif /* LWIP_HDR_DEBUG_H */

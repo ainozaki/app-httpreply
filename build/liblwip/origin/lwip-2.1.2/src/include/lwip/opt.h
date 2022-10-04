@@ -3249,7 +3249,7 @@
  * @see debugging_levels
  */
 #if !defined LWIP_DBG_TYPES_ON || defined __DOXYGEN__
-#define LWIP_DBG_TYPES_ON LWIP_DBG_ON
+#define LWIP_DBG_TYPES_ON LWIP_DBG_OFF
 #endif
 
 /**
@@ -3319,7 +3319,7 @@
  * IP_DEBUG: Enable debugging for IP.
  */
 //#if !defined IP_DEBUG || defined __DOXYGEN__
-#define IP_DEBUG LWIP_DBG_ON
+#define IP_DEBUG LWIP_DBG_OFF
 //#endif
 
 /**
@@ -3375,7 +3375,7 @@
  * TCP_INPUT_DEBUG: Enable debugging in tcp_in.c for incoming debug.
  */
 #if !defined TCP_INPUT_DEBUG || defined __DOXYGEN__
-#define TCP_INPUT_DEBUG LWIP_DBG_ON
+#define TCP_INPUT_DEBUG LWIP_DBG_OFF
 #endif
 
 /**
@@ -3404,14 +3404,14 @@
  * TCP_WND_DEBUG: Enable debugging in tcp_in.c for window updating.
  */
 #if !defined TCP_WND_DEBUG || defined __DOXYGEN__
-#define TCP_WND_DEBUG LWIP_DBG_ON
+#define TCP_WND_DEBUG LWIP_DBG_OFF
 #endif
 
 /**
  * TCP_OUTPUT_DEBUG: Enable debugging in tcp_out.c output functions.
  */
 #if !defined TCP_OUTPUT_DEBUG || defined __DOXYGEN__
-#define TCP_OUTPUT_DEBUG LWIP_DBG_ON
+#define TCP_OUTPUT_DEBUG LWIP_DBG_OFF
 #endif
 
 /**

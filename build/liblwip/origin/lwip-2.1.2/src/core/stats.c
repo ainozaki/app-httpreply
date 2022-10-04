@@ -45,8 +45,12 @@
 #include "lwip/mem.h"
 #include "lwip/debug.h"
 
-#include <stdio.h>
 #include <string.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <time.h>
 
 struct stats_ lwip_stats;
 
@@ -54,12 +58,15 @@ struct stats_ lwip_stats;
 u64_t tsc_list[TSC_PROTO_MAX][TSC_ENTRY_MAX];
 static int tsc_index[TSC_PROTO_MAX];
 static int tsc_block_index[TSC_PROTO_MAX];
+static int tsc_fd;
 
 static void tsc_show(int proto)
 {
-  printf("%d %d\n", proto, tsc_block_index[proto]);
+  // write(&proto, sizeof(int));
+  printf("%d\n", proto);
   for (int i = 0; i < tsc_index[proto]; i++)
   {
+    // write(stdout, &tsc_list[proto][i], sizeof(u64_t));
     printf("0x%lx\n", tsc_list[proto][i]);
   }
 }
@@ -73,73 +80,22 @@ void tsc_write(int proto, u64_t value)
   }
   if (tsc_index[proto] >= TSC_ENTRY_MAX)
   {
-    // tsc_show(proto);
+    tsc_show(proto);
     tsc_index[proto] = 0;
     tsc_block_index[proto]++;
   }
   tsc_list[proto][tsc_index[proto]++] = value;
 }
 
-// tcp with winsize
-u64_t tsc_param_list[4][TSC_ENTRY_MAX];
-static int tsc_param_index;
-static int tsc_param_block_index;
-static void tsc_param_show()
-{
-  printf("%d\n", tsc_param_block_index);
-  for (int i = 0; i < tsc_param_index; i++)
-  {
-    printf("0x%lx ", tsc_param_list[0][i]);
-    printf("0x%lx ", tsc_param_list[1][i]);
-    printf("0x%lx ", tsc_param_list[2][i]);
-    printf("0x%lx\n", tsc_param_list[3][i]);
-  }
-}
-
-void tsc_param_write(u64_t value, u64_t hdr, u64_t recv, u64_t snd)
-{
-  if (tsc_param_index >= TSC_ENTRY_MAX)
-  {
-    // tsc_param_show();
-    tsc_param_index = 0;
-    tsc_param_block_index++;
-  }
-  tsc_param_list[0][tsc_param_index] = value;
-  tsc_param_list[1][tsc_param_index] = hdr;
-  tsc_param_list[2][tsc_param_index] = recv;
-  tsc_param_list[3][tsc_param_index++] = snd;
-}
-
-// tcp
-u64_t tsc_tcp_list[4][TSC_ENTRY_MAX];
-static int tsc_tcp_index;
-static int tsc_tcp_block_index;
-
-static void tsc_tcp_show()
-{
-  printf("%d\n", tsc_tcp_block_index);
-  for (int i = 0; i < tsc_tcp_index; i++)
-  {
-    printf("0x%lx ", tsc_tcp_list[0][i]);
-    printf("0x%lx ", tsc_tcp_list[1][i]);
-    printf("0x%lx ", tsc_tcp_list[2][i]);
-    printf("0x%lx\n", tsc_tcp_list[3][i]);
-  }
-}
-
-void tsc_tcp_write(u64_t type, u64_t value)
-{
-  if (tsc_tcp_index >= TSC_ENTRY_MAX)
-  {
-    tsc_tcp_show();
-    tsc_tcp_index = 0;
-    tsc_tcp_block_index++;
-  }
-  tsc_tcp_list[type][tsc_tcp_index++] = value;
-}
-
 void stats_init(void)
 {
+  /*
+  time_t t = time(NULL);
+  struct tm *tm = localtime(&t);
+  char path[100];
+  sprintf(path, "/home/nozaki/app-httpreply/result/log%02d%02d-%02d:%02d", tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min);
+  tsc_fd = open(path, O_CREAT | O_WRONLY);
+  */
 #ifdef LWIP_DEBUG
 #if MEM_STATS
   lwip_stats.mem.name = "MEM";
