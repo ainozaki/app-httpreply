@@ -19,7 +19,7 @@ def main():
             blockno = int(l.split(", ")[0])
             for _ in range(100):
                 v = f.readline().split(" ")
-                for i in range(4):
+                for i in range(3):
                     elem[i].append(int(v[i], 16) / clock)
 
         ## create figure  
@@ -30,30 +30,25 @@ def main():
     ax2_cdf = ax2.twinx()
     ax3 = fig.add_subplot(2, 2, 3)
     ax3_cdf = ax3.twinx()
-    ax4 = fig.add_subplot(2, 2, 4)
-    ax4_cdf = ax4.twinx()
         
         ## x  
     x1 = np.array(range(len(elem[0])))
     x2 = np.array(range(len(elem[1])))
     x3 = np.array(range(len(elem[2])))
-    x4 = np.array(range(len(elem[3])))
         
         ## y
     y1 = np.sort(np.array(elem[0]))
     y2 = np.sort(np.array(elem[1]))
     y3 = np.sort(np.array(elem[2]))
-    y4 = np.sort(np.array(elem[3]))
 
         ## labels
     c1, c2, c3, c4 = "blue", "green", "red", "cyan"
-    l1, l2, l3, l4 = "tcp_listen_part1", "tcp_listen_part2", "tcp_listen_part3", "tcp_listen_part3"
+    l1, l2, l3, l4 = "tcp_listen_part0_0", "tcp_listen_part0_1", "tcp_listen_part0_2", "tcp_listen_part0_3"
 
         ## plot
     ax1.hist(y1, bins=100, label=l1, color=c1)
     ax2.hist(y2, bins=100, label=l2, color=c2)
     ax3.hist(y3, bins=100, label=l3, color=c3)
-    ax4.hist(y4, bins=100, label=l4, color=c4)
 
     ax1.set_xlabel("time [ns]")
     ax1.set_ylabel("count")
@@ -61,14 +56,11 @@ def main():
     ax2.set_ylabel("count")
     ax3.set_xlabel("time [ns]")
     ax3.set_ylabel("count")
-    ax4.set_xlabel("time [ns]")
-    ax4.set_ylabel("count")
 	
         ## legends
     ax1.legend()
     ax2.legend()
     ax3.legend()
-    ax4.legend()
 
         ## show
     fig.tight_layout()
