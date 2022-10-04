@@ -429,6 +429,8 @@ void tcp_input(struct pbuf *p, struct netif *inp)
 #endif
       {
         LOG_DEBUG("\tlisten_input\n");
+        u64_t lend = rdtsc();
+        tsc_tcp_write(0, lend - start);
         tcp_listen_input(lpcb, start);
       }
       pbuf_free(p);
@@ -730,6 +732,9 @@ tcp_listen_input(struct tcp_pcb_listen *pcb, uint64_t start)
   u32_t iss;
   err_t rc;
 
+  u64_t lstart = rdtsc();
+  u64_t lend;
+
   if (flags & TCP_RST)
   {
     /* An incoming RST should be ignored. Return. */
@@ -764,7 +769,11 @@ tcp_listen_input(struct tcp_pcb_listen *pcb, uint64_t start)
       return;
     }
 #endif /* TCP_LISTEN_BACKLOG */
+    lend = rdtsc();
+    tsc_tcp_write(1, lend - start);
     npcb = tcp_alloc(pcb->prio);
+    lend = rdtsc();
+    tsc_tcp_write(2, lend - start);
     /* If a new PCB could not be created (probably due to lack of memory),
        we don't do anything, but rely on the sender will retransmit the
        SYN at a time when we have more memory available. */
@@ -830,6 +839,7 @@ tcp_listen_input(struct tcp_pcb_listen *pcb, uint64_t start)
     LOG_DEBUG("\tcall tcp_output SYN/ACK\n");
     uint64_t end = rdtsc();
     LOG_DEBUG("tcp_input 0x%lx\n", end - start);
+    tsc_tcp_write(3, end - start);
     tsc_write(TSC_TCP_1, end - start);
 
     /* Send a SYN|ACK together with the MSS option. */
