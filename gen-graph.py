@@ -86,6 +86,11 @@ def main():
     ax4.set_xlabel("time [ns]")
     ax4.set_ylabel("count")
     ax4_cdf.set_ylabel("CDF")
+
+    ax1_cdf.set_ylim(0, 1)
+    ax2_cdf.set_ylim(0, 1)
+    ax3_cdf.set_ylim(0, 1)
+    ax4_cdf.set_ylim(0, 1)
 	
         ## legends
     h1, l1 = ax1.get_legend_handles_labels()
