@@ -45,12 +45,12 @@ def main():
     l1, l2, l3, l4, l5 = "input_ether", "input_ip", "input_udp", "input_tcp", "CDF"
 
         ## hist, cdf
-    n, bins, _ = ax1.hist(y1, bins=100, label=l1, color=c1)
+    n, bins, _ = ax1.hist(y1, range=(0,1000), bins=100, label=l1, color=c1)
     x1_cdf = np.array([(bins[i] + bins[i+1])/2 for i in range(len(bins) - 1)])
     y1_cdf = np.cumsum(n) / np.sum(n)
     ax1_cdf.plot(x1_cdf, y1_cdf, label=l5, color=c5, marker="o", markersize=1)
 
-    n, bins, _ = ax2.hist(y2, bins=100, label=l2, color=c2)
+    n, bins, _ = ax2.hist(y2, range=(0,1000), bins=100, label=l2, color=c2)
     x2_cdf = np.array([(bins[i] + bins[i+1])/2 for i in range(len(bins) - 1)])
     y2_cdf = np.cumsum(n) / np.sum(n)
     ax2_cdf.plot(x2_cdf, y2_cdf, label=l5, color=c5, marker="o", markersize=1)
@@ -60,7 +60,7 @@ def main():
     y3_cdf = np.cumsum(n) / np.sum(n)
     ax3_cdf.plot(x3_cdf, y3_cdf, label=l5, color=c5, marker="o", markersize=1)
 
-    n, bins, _ = ax4.hist(y4, bins=100, label=l4, color=c4)
+    n, bins, _ = ax4.hist(y4, range=(0, 50000), bins=100, label=l4, color=c4)
     x4_cdf = np.array([(bins[i] + bins[i+1])/2 for i in range(len(bins) - 1)])
     y4_cdf = np.cumsum(n) / np.sum(n)
     ax4_cdf.plot(x4_cdf, y4_cdf, label=l5, color=c5, marker="o", markersize=1)
