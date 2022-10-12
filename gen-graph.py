@@ -1,14 +1,16 @@
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 import sys
 
 def main():
     argv = sys.argv
     if len(argv) < 3:
-        print("usage:", argv[0], "<filename> <entrysize>")
+        print("usage:", argv[0], "<filename> <title> <entrysize>")
         return
     filename = argv[1]
-    entsize = int(argv[2])
+    title = argv[2]
+    entsize = int(argv[3])
     elem = [[] for i in range(4)]
     clock = 3.8005123 # GHz
 
@@ -108,6 +110,14 @@ def main():
     h4, l4 = ax4.get_legend_handles_labels()
     h4_cdf, l4_cdf = ax4_cdf.get_legend_handles_labels()
     ax4.legend(h4 + h4_cdf, l4 + l4_cdf, loc="lower right")
+
+        ## 99% latency
+    print("=================");
+    print("99% latency (", title, ")");
+    print("ether: ", y1[math.floor(len(y1) * 0.9)], " [ns]");
+    print("ip   : ", y2[math.floor(len(y2) * 0.9)], " [ns]");
+    print("tcp  : ", y4[math.floor(len(y4) * 0.9)], " [ns]");
+    print("=================");
 
         ## show
     fig.tight_layout()
