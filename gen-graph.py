@@ -114,9 +114,9 @@ def main():
         ## 99% latency
     print("=================");
     print("99% latency (", title, ")");
-    print("ether: ", y1[math.floor(len(y1) * 0.9)], " [ns]");
-    print("ip   : ", y2[math.floor(len(y2) * 0.9)], " [ns]");
-    print("tcp  : ", y4[math.floor(len(y4) * 0.9)], " [ns]");
+    print("ether: ", round(y1[math.floor(len(y1) * 0.9)], 2), " [ns]");
+    print("ip   : ", round(y2[math.floor(len(y2) * 0.9)], 2), " [ns]");
+    print("tcp  : ", round(y4[math.floor(len(y4) * 0.9)], 2), " [ns]");
     print("=================");
 
         ## show
