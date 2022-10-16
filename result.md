@@ -1,7 +1,7 @@
-### 99% latency ( no-loop )
-- ether:  62.1  [ns]
-- ip   :  134.72  [ns]
-- tcp  :  1154.58  [ns]
+### 99% latency ( hash )
+- ether:  66.83  [ns]
+- ip   :  129.46  [ns]
+- tcp  :  1162.47  [ns]
 
 ### 99% latency ( loop )
 - ether:  63.68  [ns]
