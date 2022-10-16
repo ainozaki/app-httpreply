@@ -509,6 +509,8 @@ extern "C"
 /* for compatibility with older implementation */
 #define tcp_new_ip6() tcp_new_ip_type(IPADDR_TYPE_V6)
 
+  void tw_hash_delete(struct tcp_pcb *pcb);
+
 #if LWIP_TCP_PCB_NUM_EXT_ARGS
   u8_t tcp_ext_arg_alloc_id(void);
   void tcp_ext_arg_set_callbacks(struct tcp_pcb *pcb, uint8_t id, const struct tcp_ext_arg_callbacks *const callbacks);

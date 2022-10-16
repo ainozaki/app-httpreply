@@ -61,6 +61,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef LWIP_HOOK_FILENAME
 #include LWIP_HOOK_FILENAME
@@ -87,6 +88,12 @@ static u8_t recv_flags;
 static struct pbuf *recv_data;
 
 struct tcp_pcb *tcp_input_pcb;
+struct pcb_hash
+{
+  struct tcp_pcb *pcb;
+  struct pcb_hash *next;
+};
+struct pcb_hash tw_hash_tbl[1000] = {0};
 
 /* Forward declarations. */
 static err_t tcp_process(struct tcp_pcb *pcb, uint64_t start);
@@ -97,6 +104,9 @@ static void tcp_listen_input(struct tcp_pcb_listen *pcb, uint64_t start);
 static void tcp_timewait_input(struct tcp_pcb *pcb, uint64_t start);
 
 static int tcp_input_delayed_close(struct tcp_pcb *pcb);
+
+static struct tcp_pcb *search_tw(ip_addr_t *remote_ip, u16_t remote_port);
+static void tw_hash_insert(struct tcp_pcb *pcb);
 
 #if LWIP_TCP_SACK_OUT
 static void tcp_add_sack(struct tcp_pcb *pcb, u32_t left, u32_t right);
@@ -114,6 +124,58 @@ static inline uint64_t rdtsc(void)
                        : "=a"(lo), "=d"(hi));
   __asm__ __volatile__("mfence");
   return ((uint64_t)hi << 32) | lo;
+}
+
+static struct tcp_pcb *search_tw(ip_addr_t *remote_ip, u16_t remote_port)
+{
+  int index = (*(u32_t *)remote_ip + remote_port) % 1000;
+  struct pcb_hash *h = &tw_hash_tbl[index];
+  while (h && h->pcb)
+  {
+    if ((h->pcb->remote_port == remote_port) && ip_addr_cmp(&(h->pcb->remote_ip), remote_ip))
+    {
+      return h->pcb;
+    }
+    h = h->next;
+  }
+  return NULL;
+}
+
+static void tw_hash_insert(struct tcp_pcb *pcb)
+{
+  int index = (*(u32_t *)&pcb->remote_ip + pcb->remote_port) % 1000;
+  struct pcb_hash *h = &tw_hash_tbl[index];
+  if (h->pcb)
+  {
+    struct pcb_hash *new = malloc(sizeof(struct pcb_hash));
+    new->pcb = pcb;
+    new->next = tw_hash_tbl[index].next;
+    tw_hash_tbl[index].next = new;
+  }
+  else
+  {
+    h->pcb = pcb;
+    h->next = NULL;
+  }
+}
+
+void tw_hash_delete(struct tcp_pcb *pcb)
+{
+  int index = (*(u32_t *)&pcb->remote_ip + pcb->remote_port) % 1000;
+  struct pcb_hash *h = &tw_hash_tbl[index];
+  while (1)
+  {
+    if ((h->pcb->remote_port == pcb->remote_port) && ip_addr_cmp(&(h->pcb->remote_ip), &pcb->remote_ip))
+    {
+      h->pcb = h->next->pcb;
+      h->next = h->next->next;
+      return;
+    }
+    else
+    {
+      h = h->next;
+    }
+  }
 }
 
 /**
@@ -313,27 +375,21 @@ void tcp_input(struct pbuf *p, struct netif *inp)
   if (pcb == NULL)
   {
     LOG_DEBUG("\tpcb == NULL, not active connection\n");
+
     /* If it did not go to an active connection, we check the connections
        in the TIME-WAIT state. */
-    for (pcb = tcp_tw_pcbs; pcb != NULL; pcb = pcb->next)
+    if ((pcb = search_tw(ip_current_src_addr(), tcphdr->src)))
     {
-      LWIP_ASSERT("tcp_input: TIME-WAIT pcb->state == TIME-WAIT", pcb->state == TIME_WAIT);
-
-      /* check if PCB is bound to specific netif */
       if ((pcb->netif_idx != NETIF_NO_INDEX) &&
           (pcb->netif_idx != netif_get_index(ip_data.current_input_netif)))
       {
-        continue;
+        pcb = NULL;
       }
-
-      if (pcb->remote_port == tcphdr->src &&
-          pcb->local_port == tcphdr->dest &&
-          ip_addr_cmp(&pcb->remote_ip, ip_current_src_addr()) &&
-          ip_addr_cmp(&pcb->local_ip, ip_current_dest_addr()))
+      else
       {
         /* We don't really care enough to move this PCB to the front
-           of the list since we are not very likely to receive that
-           many segments for connections in TIME-WAIT. */
+             of the list since we are not very likely to receive that
+             many segments for connections in TIME-WAIT. */
         LWIP_DEBUGF(TCP_INPUT_DEBUG, ("tcp_input: packed for TIME_WAITing connection.\n"));
 #ifdef LWIP_HOOK_TCP_INPACKET_PCB
         if (LWIP_HOOK_TCP_INPACKET_PCB(pcb, tcphdr, tcphdr_optlen, tcphdr_opt1len,
@@ -346,7 +402,7 @@ void tcp_input(struct pbuf *p, struct netif *inp)
         pbuf_free(p);
         return;
       }
-    } // check if pcb is TIME-WAIT state connection
+    }
 
     /* Finally, if we still did not get a match, we check all PCBs that
        are LISTENing for incoming connections. */
@@ -1170,6 +1226,7 @@ tcp_process(struct tcp_pcb *pcb, uint64_t start)
         TCP_RMV_ACTIVE(pcb);
         pcb->state = TIME_WAIT;
         TCP_REG(&tcp_tw_pcbs, pcb);
+        tw_hash_insert(pcb);
       }
       else
       {
@@ -1197,6 +1254,7 @@ tcp_process(struct tcp_pcb *pcb, uint64_t start)
       TCP_RMV_ACTIVE(pcb);
       pcb->state = TIME_WAIT;
       TCP_REG(&tcp_tw_pcbs, pcb);
+      tw_hash_insert(pcb);
     }
     break;
   case CLOSING:
@@ -1208,6 +1266,7 @@ tcp_process(struct tcp_pcb *pcb, uint64_t start)
       TCP_RMV_ACTIVE(pcb);
       pcb->state = TIME_WAIT;
       TCP_REG(&tcp_tw_pcbs, pcb);
+      tw_hash_insert(pcb);
     }
     break;
   case LAST_ACK:
@@ -1890,7 +1949,7 @@ tcp_receive(struct tcp_pcb *pcb)
              but lwIP currently does not support including SACKs in data packets. So we force
              it to respond with an empty ACK packet (only if there is at least one SACK to be sent).
              NOTE: tcp_send_empty_ack() on success clears the ACK flags (set by tcp_ack()) */
-          tcp_send_empty_ack(pcb);
+          tcp_send_empty_ack(pcb, rdtsc());
         }
 #endif /* LWIP_TCP_SACK_OUT */
 

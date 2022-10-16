@@ -58,15 +58,12 @@ struct stats_ lwip_stats;
 u64_t tsc_list[TSC_PROTO_MAX][TSC_ENTRY_MAX];
 static int tsc_index[TSC_PROTO_MAX];
 static int tsc_block_index[TSC_PROTO_MAX];
-static int tsc_fd;
 
 static void tsc_show(int proto)
 {
-  // write(&proto, sizeof(int));
   printf("%d\n", proto);
   for (int i = 0; i < tsc_index[proto]; i++)
   {
-    // write(stdout, &tsc_list[proto][i], sizeof(u64_t));
     printf("0x%lx\n", tsc_list[proto][i]);
   }
 }
