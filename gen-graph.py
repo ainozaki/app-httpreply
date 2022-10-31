@@ -5,24 +5,32 @@ import sys
 
 def main():
     argv = sys.argv
-    if len(argv) < 3:
-        print("usage:", argv[0], "<filename> <title> <entrysize>")
+    if len(argv) < 2:
+        print("usage:", argv[0], "<filename> <title>")
         return
     filename = argv[1]
     title = argv[2]
-    entsize = int(argv[3])
     elem = [[] for i in range(4)]
     clock = 3.8005123 # GHz
+    proto = 0
 
     ## extract data from logfile
     with open(filename) as f:
         while True:
-            l = f.readline()
+            l = f.readline().replace('\n', '')
             if not l:
                 break
-            proto = int(l)
-            for _ in range(entsize):
-                v = int(f.readline(), 16) / clock
+            if l == "ETHER":
+                proto = 0
+                print("Ether")
+            elif l == "IP":
+                proto = 1
+                print("IP")
+            elif l == "TCP":
+                proto = 3
+                print("TCP")
+            else:
+                v = int(l, 16) / clock
                 elem[proto].append(v)
 
         ## create figure  
@@ -62,7 +70,8 @@ def main():
     y3_cdf = np.cumsum(n) / np.sum(n)
     ax3_cdf.plot(x3_cdf, y3_cdf, label=l5, color=c5, marker="o", markersize=1)
 
-    n, bins, _ = ax4.hist(y4, range=(0, 50000), bins=100, label=l4, color=c4)
+#n, bins, _ = ax4.hist(y4, range=(0, 50000), bins=100, label=l4, color=c4)
+    n, bins, _ = ax4.hist(y4, bins=100, label=l4, color=c4)
     x4_cdf = np.array([(bins[i] + bins[i+1])/2 for i in range(len(bins) - 1)])
     y4_cdf = np.cumsum(n) / np.sum(n)
     ax4_cdf.plot(x4_cdf, y4_cdf, label=l5, color=c5, marker="o", markersize=1)
@@ -111,13 +120,17 @@ def main():
     h4_cdf, l4_cdf = ax4_cdf.get_legend_handles_labels()
     ax4.legend(h4 + h4_cdf, l4 + l4_cdf, loc="lower right")
 
-        ## 99% latency
-    print("=================");
-    print("99% latency (", title, ")");
+    print("======================");
+    print("Data size:")
+    print("ether:", len(y1))
+    print("ip   :", len(y2))
+    print("tcp  :", len(y4))
+    print("======================");
+    print("99% latency (", title, "):");
     print("ether: ", round(y1[math.floor(len(y1) * 0.9)], 2), " [ns]");
     print("ip   : ", round(y2[math.floor(len(y2) * 0.9)], 2), " [ns]");
     print("tcp  : ", round(y4[math.floor(len(y4) * 0.9)], 2), " [ns]");
-    print("=================");
+    print("======================");
 
         ## show
     fig.tight_layout()
