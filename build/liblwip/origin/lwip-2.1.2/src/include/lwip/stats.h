@@ -325,6 +325,7 @@ extern "C"
 #define TSC_TCP 3
 #define TSC_PROTO_MAX 4
 #define TSC_ENTRY_MAX 1000
+  void lwip_init_tsc(char *buf);
   void tsc_write(int type, u64_t value);
 
 #define STATS_INC(x) ++lwip_stats.x

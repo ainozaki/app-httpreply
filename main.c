@@ -51,6 +51,8 @@ static const char reply[] = "HTTP/1.1 200 OK\r\n" \
 
 #define BUFLEN 2048
 static char recvbuf[BUFLEN];
+static char tsc_list[1000];
+
 
 int main(int argc __attribute__((unused)),
 	 char *argv[] __attribute__((unused)))
@@ -60,6 +62,8 @@ int main(int argc __attribute__((unused)),
 	ssize_t n;
 	struct sockaddr_in srv_addr;
 
+	printf("main.c: buf=%p\n", tsc_list);
+	init_tsc(tsc_list);
 	srv = socket(AF_INET, SOCK_STREAM, 0);
 	if (srv < 0) {
 		fprintf(stderr, "Failed to create socket: %d\n", errno);
@@ -101,7 +105,7 @@ int main(int argc __attribute__((unused)),
 		if (n < 0)
 			fprintf(stderr, "Failed to send a reply\n");
 		else
-			printf("Sent a reply\n");
+			//printf("Sent a reply\n");
 
 		/* Close connection */
 		close(client);

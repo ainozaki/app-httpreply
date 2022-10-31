@@ -58,6 +58,13 @@ struct stats_ lwip_stats;
 u64_t tsc_list[TSC_PROTO_MAX][TSC_ENTRY_MAX];
 static int tsc_index[TSC_PROTO_MAX];
 static int tsc_block_index[TSC_PROTO_MAX];
+static char *tsc_buf;
+
+void lwip_init_tsc(char *buf)
+{
+  printf("###lwip_init_tsc: buf=%p\n", buf);
+  tsc_buf = buf;
+}
 
 static void tsc_show(int proto)
 {
@@ -70,6 +77,7 @@ static void tsc_show(int proto)
 
 void tsc_write(int proto, u64_t value)
 {
+  printf("###tsc_write: tsc_buff=%p\n", tsc_buf);
   if (proto >= TSC_PROTO_MAX)
   {
     fprintf(stderr, "tsc type unknown\n");
