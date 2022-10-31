@@ -51,7 +51,9 @@ static const char reply[] = "HTTP/1.1 200 OK\r\n" \
 
 #define BUFLEN 2048
 static char recvbuf[BUFLEN];
-static char tsc_list[1000];
+
+#define TSC_BUFNUM 100000
+static uint64_t tsc_list[TSC_BUFNUM];
 
 
 int main(int argc __attribute__((unused)),
@@ -61,9 +63,10 @@ int main(int argc __attribute__((unused)),
 	int srv, client;
 	ssize_t n;
 	struct sockaddr_in srv_addr;
+	int index = 0;
 
 	printf("main.c: buf=%p\n", tsc_list);
-	init_tsc(tsc_list);
+	tsc_init(tsc_list, TSC_BUFNUM);
 	srv = socket(AF_INET, SOCK_STREAM, 0);
 	if (srv < 0) {
 		fprintf(stderr, "Failed to create socket: %d\n", errno);
@@ -88,7 +91,7 @@ int main(int argc __attribute__((unused)),
 	}
 
 	printf("Listening on port %d...\n", LISTEN_PORT);
-	while (1) {
+	while (index < 1000) {
 		client = accept(srv, NULL, 0);
 		if (client < 0) {
 			fprintf(stderr,
@@ -109,7 +112,11 @@ int main(int argc __attribute__((unused)),
 
 		/* Close connection */
 		close(client);
+
+		index++;
 	}
+
+	tsc_show();
 
 out:
 	return rc;

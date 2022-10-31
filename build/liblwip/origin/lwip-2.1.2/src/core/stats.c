@@ -55,52 +55,75 @@
 struct stats_ lwip_stats;
 
 /** timestamp counter */
-u64_t tsc_list[TSC_PROTO_MAX][TSC_ENTRY_MAX];
-static int tsc_index[TSC_PROTO_MAX];
-static int tsc_block_index[TSC_PROTO_MAX];
-static char *tsc_buf;
+uint64_t *tsc_ether_start;
+uint64_t *tsc_ip_start;
+uint64_t *tsc_tcp_start;
+uint64_t *tsc_ether;
+uint64_t *tsc_ip;
+uint64_t *tsc_tcp;
 
-void lwip_init_tsc(char *buf)
+void lwip_tsc_init(uint64_t *buf, int len)
 {
   printf("###lwip_init_tsc: buf=%p\n", buf);
-  tsc_buf = buf;
+  tsc_ether_start = buf;
+  tsc_ip_start = tsc_ether_start + len / 3;
+  tsc_tcp_start = tsc_ip_start + len / 3;
+
+  tsc_ether = tsc_ether_start;
+  tsc_ip = tsc_ip_start;
+  tsc_tcp = tsc_tcp_start;
 }
 
-static void tsc_show(int proto)
+void lwip_tsc_show(int proto)
 {
-  printf("%d\n", proto);
-  for (int i = 0; i < tsc_index[proto]; i++)
+  uint64_t *tmp;
+  printf("ETHER\n");
+  tmp = tsc_ether_start;
+  while (tmp != tsc_ether)
   {
-    printf("0x%lx\n", tsc_list[proto][i]);
+    printf("0x%lx\n", *tmp);
+    tmp++;
+  }
+  printf("IP\n");
+  tmp = tsc_ip_start;
+  while (tmp != tsc_ip)
+  {
+    printf("0x%lx\n", *tmp);
+    tmp++;
+  }
+  printf("TCP\n");
+  tmp = tsc_tcp_start;
+  while (tmp != tsc_tcp)
+  {
+    printf("0x%lx\n", *tmp);
+    tmp++;
   }
 }
 
 void tsc_write(int proto, u64_t value)
 {
-  printf("###tsc_write: tsc_buff=%p\n", tsc_buf);
-  if (proto >= TSC_PROTO_MAX)
+  switch (proto)
   {
-    fprintf(stderr, "tsc type unknown\n");
-    return;
+  case TSC_ETHERNET:
+    *tsc_ether = value;
+    tsc_ether++;
+    break;
+  case TSC_IP:
+    *tsc_ip = value;
+    tsc_ip++;
+    break;
+  case TSC_TCP:
+    *tsc_tcp = value;
+    tsc_tcp++;
+    break;
+  default:
+    printf("unknown tsp type: %d\n", proto);
+    break;
   }
-  if (tsc_index[proto] >= TSC_ENTRY_MAX)
-  {
-    tsc_show(proto);
-    tsc_index[proto] = 0;
-    tsc_block_index[proto]++;
-  }
-  tsc_list[proto][tsc_index[proto]++] = value;
 }
 
 void stats_init(void)
 {
-  /*
-  time_t t = time(NULL);
-  struct tm *tm = localtime(&t);
-  char path[100];
-  sprintf(path, "/home/nozaki/app-httpreply/result/log%02d%02d-%02d:%02d", tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min);
-  tsc_fd = open(path, O_CREAT | O_WRONLY);
-  */
 #ifdef LWIP_DEBUG
 #if MEM_STATS
   lwip_stats.mem.name = "MEM";
