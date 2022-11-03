@@ -108,9 +108,6 @@ static void tcp_timewait_input(struct tcp_pcb *pcb, uint64_t start);
 
 static int tcp_input_delayed_close(struct tcp_pcb *pcb);
 
-static struct tcp_pcb *search_tw(ip_addr_t *remote_ip, u16_t remote_port);
-static void tw_hash_insert(struct tcp_pcb *pcb);
-
 static int cuckoo_hash_1(ip_addr_t *remote_ip, u16_t remote_port)
 {
   return (*(u32_t *)remote_ip + remote_port) % 10000;
@@ -138,21 +135,6 @@ static inline uint64_t rdtsc(void)
   return ((uint64_t)hi << 32) | lo;
 }
 
-static struct tcp_pcb *search_tw(ip_addr_t *remote_ip, u16_t remote_port)
-{
-  int index = (*(u32_t *)remote_ip + remote_port) % 10000;
-  struct pcb_hash *h = &tw_hash_tbl[index];
-  while (h && h->pcb)
-  {
-    if ((h->pcb->remote_port == remote_port) && ip_addr_cmp(&(h->pcb->remote_ip), remote_ip))
-    {
-      return h->pcb;
-    }
-    h = h->next;
-  }
-  return NULL;
-}
-
 static struct tcp_pcb *tw_cuckoo_hash_search(ip_addr_t *remote_ip, u16_t remote_port)
 {
   int index;
@@ -176,24 +158,6 @@ static struct tcp_pcb *tw_cuckoo_hash_search(ip_addr_t *remote_ip, u16_t remote_
 
   // Not found
   return NULL;
-}
-
-static void tw_hash_insert(struct tcp_pcb *pcb)
-{
-  int index = (*(u32_t *)&pcb->remote_ip + pcb->remote_port) % 1000;
-  struct pcb_hash *h = &tw_hash_tbl[index];
-  if (h->pcb)
-  {
-    struct pcb_hash *new = malloc(sizeof(struct pcb_hash));
-    new->pcb = pcb;
-    new->next = tw_hash_tbl[index].next;
-    tw_hash_tbl[index].next = new;
-  }
-  else
-  {
-    h->pcb = pcb;
-    h->next = NULL;
-  }
 }
 
 static void tw_cuckoo_hash_insert(struct tcp_pcb *pcb)
@@ -230,25 +194,6 @@ static void tw_cuckoo_hash_insert(struct tcp_pcb *pcb)
     tmp = insert_pcb;
     insert_pcb = tw_cuckoo_hash_t2[index];
     tw_cuckoo_hash_t2[index] = tmp;
-  }
-}
-
-static void tw_hash_delete(struct tcp_pcb *pcb)
-{
-  int index = (*(u32_t *)&pcb->remote_ip + pcb->remote_port) % 1000;
-  struct pcb_hash *h = &tw_hash_tbl[index];
-  while (1)
-  {
-    if ((h->pcb->remote_port == pcb->remote_port) && ip_addr_cmp(&(h->pcb->remote_ip), &pcb->remote_ip))
-    {
-      h->pcb = h->next->pcb;
-      h->next = h->next->next;
-      return;
-    }
-    else
-    {
-      h = h->next;
-    }
   }
 }
 
