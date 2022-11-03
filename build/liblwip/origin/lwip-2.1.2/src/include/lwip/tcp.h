@@ -509,7 +509,7 @@ extern "C"
 /* for compatibility with older implementation */
 #define tcp_new_ip6() tcp_new_ip_type(IPADDR_TYPE_V6)
 
-  void tw_hash_delete(struct tcp_pcb *pcb);
+  void tw_cuckoo_hash_delete(struct tcp_pcb *pcb);
 
 #if LWIP_TCP_PCB_NUM_EXT_ARGS
   u8_t tcp_ext_arg_alloc_id(void);

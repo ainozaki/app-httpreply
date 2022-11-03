@@ -52,7 +52,7 @@ static const char reply[] = "HTTP/1.1 200 OK\r\n" \
 #define BUFLEN 2048
 static char recvbuf[BUFLEN];
 
-#define TSC_BUFNUM 100000
+#define TSC_BUFNUM 300000
 static uint64_t tsc_list[TSC_BUFNUM];
 
 

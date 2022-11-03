@@ -600,7 +600,7 @@ void tcp_abandon(struct tcp_pcb *pcb, int reset)
   if (pcb->state == TIME_WAIT)
   {
     tcp_pcb_remove(&tcp_tw_pcbs, pcb);
-    tw_hash_delete(pcb);
+    tw_cuckoo_hash_delete(pcb);
     tcp_free(pcb);
   }
   else
