@@ -1,3 +1,14 @@
+## cuckoo
+### Data size:
+- ether: 5009
+- ip   : 5000
+- tcp  : 5000
+
+### 99% latency ( cuckoo ):
+- ether:  68.94  [ns]
+- ip   :  149.45  [ns]
+- tcp  :  1191.42  [ns]
+
 ## New Log API
 #### Data size:
 - ether: 5009
