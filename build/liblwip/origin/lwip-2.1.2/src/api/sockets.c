@@ -983,7 +983,8 @@ lwip_recv_tcp(struct lwip_sock *sock, void *mem, size_t len, int flags)
 
     /* copy the contents of the received buffer into
     the supplied memory pointer mem */
-    pbuf_copy_partial(p, (u8_t *)mem + recvd, copylen, 0);
+    //pbuf_copy_partial(p, (u8_t *)mem + recvd, copylen, 0);
+		mem = p->payload;
 
     recvd += copylen;
 
