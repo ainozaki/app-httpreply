@@ -39,15 +39,15 @@
 #include <errno.h>
 
 #define LISTEN_PORT 8123
-static const char reply[] = "HTTP/1.1 200 OK\r\n" \
-			    "Content-type: text/html\r\n" \
-			    "Connection: close\r\n" \
-			    "\r\n" \
-			    "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">" \
-			    "<html>" \
-			    "<head><title>It works!</title></head>" \
-			    "<body><h1>It works!</h1><p>This is only a test.</p></body>" \
-			    "</html>\n";
+static const char reply[] = "HTTP/1.1 200 OK\r\n"
+							"Content-type: text/html\r\n"
+							"Connection: close\r\n"
+							"\r\n"
+							"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">"
+							"<html>"
+							"<head><title>It works!</title></head>"
+							"<body><h1>It works!</h1><p>This is only a test.</p></body>"
+							"</html>\n";
 
 #define BUFLEN 2048
 static char recvbuf[BUFLEN];
@@ -55,9 +55,8 @@ static char recvbuf[BUFLEN];
 #define TSC_BUFNUM 300000
 static uint64_t tsc_list[TSC_BUFNUM];
 
-
 int main(int argc __attribute__((unused)),
-	 char *argv[] __attribute__((unused)))
+		 char *argv[] __attribute__((unused)))
 {
 	int rc = 0;
 	int srv, client;
@@ -68,7 +67,8 @@ int main(int argc __attribute__((unused)),
 	printf("main.c: buf=%p\n", tsc_list);
 	tsc_init(tsc_list, TSC_BUFNUM);
 	srv = socket(AF_INET, SOCK_STREAM, 0);
-	if (srv < 0) {
+	if (srv < 0)
+	{
 		fprintf(stderr, "Failed to create socket: %d\n", errno);
 		goto out;
 	}
@@ -77,26 +77,30 @@ int main(int argc __attribute__((unused)),
 	srv_addr.sin_addr.s_addr = INADDR_ANY;
 	srv_addr.sin_port = htons(LISTEN_PORT);
 
-	rc = bind(srv, (struct sockaddr *) &srv_addr, sizeof(srv_addr));
-	if (rc < 0) {
+	rc = bind(srv, (struct sockaddr *)&srv_addr, sizeof(srv_addr));
+	if (rc < 0)
+	{
 		fprintf(stderr, "Failed to bind socket: %d\n", errno);
 		goto out;
 	}
 
 	/* Accept one simultaneous connection */
 	rc = listen(srv, 1);
-	if (rc < 0) {
+	if (rc < 0)
+	{
 		fprintf(stderr, "Failed to listen on socket: %d\n", errno);
 		goto out;
 	}
 
 	printf("Listening on port %d...\n", LISTEN_PORT);
-	while (index < 1000) {
+	while (1)
+	{
 		client = accept(srv, NULL, 0);
-		if (client < 0) {
+		if (client < 0)
+		{
 			fprintf(stderr,
-				"Failed to accept incoming connection: %d\n",
-				errno);
+					"Failed to accept incoming connection: %d\n",
+					errno);
 			goto out;
 		}
 
@@ -108,10 +112,10 @@ int main(int argc __attribute__((unused)),
 		if (n < 0)
 			fprintf(stderr, "Failed to send a reply\n");
 		else
-			//printf("Sent a reply\n");
+			// printf("Sent a reply\n");
 
-		/* Close connection */
-		close(client);
+			/* Close connection */
+			close(client);
 
 		index++;
 	}
